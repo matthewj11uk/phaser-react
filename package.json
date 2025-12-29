@@ -4,15 +4,14 @@
     "version": "1.1.0",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/phaserjs/template-react-ts.git"
+        "url": "git+https://github.com/matthewj11uk/phaser-react.git"
     },
-    "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+    "author": "Matthew <matthewj11uk@gmail.com>",
     "license": "MIT",
-    "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
     "bugs": {
-        "url": "https://github.com/phaserjs/template-react-ts/issues"
+        "url": "https://github.com/matthewj11uk/phaser-react/issues"
     },
-    "homepage": "https://github.com/phaserjs/template-react-ts#readme",
+    "homepage": "https://matthewj11uk.github.io/phaser-react/",
     "keywords": [
         "phaser",
         "phaser3",
@@ -24,7 +23,9 @@
         "dev": "node log.js dev & vite --config vite/config.dev.mjs",
         "build": "node log.js build & vite build --config vite/config.prod.mjs",
         "dev-nolog": "vite --config vite/config.dev.mjs",
-        "build-nolog": "vite build --config vite/config.prod.mjs"
+        "build-nolog": "vite build --config vite/config.prod.mjs",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d dist"
     },
     "dependencies": {
         "phaser": "^3.90.0",
@@ -39,10 +40,11 @@
         "eslint": "^9.22.0",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.19",
+        "gh-pages": "^6.3.0",
         "globals": "^16.0.0",
+        "terser": "^5.28.1",
         "typescript": "~5.7.2",
         "typescript-eslint": "^8.26.1",
-        "vite": "^6.3.1",
-        "terser": "^5.28.1"
+        "vite": "^6.3.1"
     }
 }
