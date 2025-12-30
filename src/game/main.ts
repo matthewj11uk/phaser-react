@@ -3,13 +3,14 @@ import { GameOver } from './scenes/GameOver';
 import { Game as MainGame } from './scenes/Game';
 import { MainMenu } from './scenes/MainMenu';
 import { Part10Scene } from './scenes/Part10Scene';
-import { AUTO, Game, Scale } from 'phaser';
+import { Game, Scale } from 'phaser';
 import { Preloader } from './scenes/Preloader';
+import { ScrollBackground } from './scenes/ScrollBackground';
 
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
 const config: Phaser.Types.Core.GameConfig = {
-    type: AUTO,
+    type: Phaser.WEBGL,
     width: 720,
     height: 1400,
     parent: 'game-container',
@@ -34,6 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
         MainMenu,
         MainGame,
         Part10Scene,
+        ScrollBackground,
         GameOver
     ]
 };
