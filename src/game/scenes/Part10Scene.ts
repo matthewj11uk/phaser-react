@@ -23,6 +23,8 @@ export class Part10Scene extends Scene {
   }
 
   preload() {
+    this.load.image("background", "assets/bg.png");
+    this.load.image("galaxy", "assets/galaxy.png");
     this.load.setPath("assets");
     this.load.image("sky", "sky.png");
     this.load.image("ground", "platform.png");
@@ -36,6 +38,10 @@ export class Part10Scene extends Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    this.scale.on("resize", this.resize, this);
+    this.scale.on("orientationchange", this.checkOrientation, this);
+    this.checkOrientation(this.scale.orientation);
 
     this.#setupPipelines();
     this.#createMainBg();
@@ -98,9 +104,10 @@ export class Part10Scene extends Scene {
       setXY: { x: 12, y: 0, stepX: stepX },
     });
 
-    this.stars.children.iterate((child: any) => {
+    this.stars.children.iterate((child: Phaser.GameObjects.GameObject) => {
       //  Give each star a slightly different bounce
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      const c = child as Phaser.Physics.Arcade.Image;
+      c.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
       return true;
     });
 
@@ -169,7 +176,7 @@ export class Part10Scene extends Scene {
       .setInteractive()
       .setScrollFactor(0);
     this.add
-      .text(310, controlY, "Right", { fontSize: "24px", color: "#000" })
+      .text(310, controlY, "Right15", { fontSize: "24px", color: "#000" })
       .setOrigin(0.5)
       .setScrollFactor(0);
 
@@ -202,25 +209,6 @@ export class Part10Scene extends Scene {
     jumpZone.on("pointerout", () => {
       this.isJumpDown = false;
     });
-
-    // Fullscreen
-    const fullscreenZone = this.add
-      .rectangle(width - 100, 50, 200, 100, 0xffffff, 0.5)
-      .setInteractive()
-      .setScrollFactor(0);
-
-    this.add
-      .text(width - 100, 50, "Fullscreen", { fontSize: "24px", color: "#000" })
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-
-    fullscreenZone.on("pointerup", () => {
-      if (this.scale.isFullscreen) {
-        this.scale.stopFullscreen();
-      } else {
-        this.scale.startFullscreen();
-      }
-    });
   }
 
   update() {
@@ -250,7 +238,7 @@ export class Part10Scene extends Scene {
       this.player.setVelocityY(-600);
     }
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   collectStar(player: any, star: any) {
     star.disableBody(true, true);
 
@@ -260,6 +248,7 @@ export class Part10Scene extends Scene {
 
     if (this.stars.countActive(true) === 0) {
       //  A new batch of stars to collect
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.stars.children.iterate((child: any) => {
         child.enableBody(true, child.x, 0, true, true);
         return true;
@@ -277,7 +266,7 @@ export class Part10Scene extends Scene {
       bomb.allowGravity = false;
     }
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   hitBomb(player: any, _bomb: any) {
     this.physics.pause();
 
@@ -289,7 +278,7 @@ export class Part10Scene extends Scene {
   }
 
   changeScene() {
-    this.scene.start("ScrollBackground");
+    this.scene.start("MainMenu");
   }
 
   #setupPipelines(): void {
@@ -315,5 +304,34 @@ export class Part10Scene extends Scene {
     this.#pipeline = this.#bgImage.getPostPipeline(
       BackgroundScrollingPostFxPipeline.name,
     ) as BackgroundScrollingPostFxPipeline;
+  }
+
+  checkOrientation(orientation: Phaser.Scale.Orientation) {
+    if (
+      !this.game.device.os.desktop &&
+      orientation === Phaser.Scale.Orientation.LANDSCAPE
+    ) {
+      this.physics.pause();
+    } else {
+      if (!this.gameOver) {
+        this.physics.resume();
+      }
+      this.time.delayedCall(100, () => {
+        this.scale.refresh();
+      });
+    }
+  }
+
+  resize(gameSize: Phaser.Structs.Size): void {
+    const width = gameSize.width;
+    const height = gameSize.height;
+
+    this.cameras.main.setViewport(0, 0, width, height);
+
+    if (this.#bgImage) {
+      this.#bgImage.setDisplaySize(width, height);
+    }
+
+    this.checkOrientation(this.scale.orientation);
   }
 }

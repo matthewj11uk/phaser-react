@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { IRefPhaserGame, PhaserGame } from "./PhaserGame";
 import { MainMenu } from "./game/scenes/MainMenu";
+import { OrientationOverlay } from "./OrientationOverlay";
 
 function App() {
   // The sprite can only be moved in the MainMenu Scene
@@ -65,8 +66,9 @@ function App() {
   };
 
   return (
-    <div id="app">
+    <div id="app" style={{ position: "relative" }}>
       <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
+      <OrientationOverlay />
     </div>
   );
 
