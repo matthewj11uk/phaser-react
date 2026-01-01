@@ -1,5 +1,6 @@
 import { MainMenu } from "./scenes/MainMenu";
-import { Part10Scene } from "./scenes/Part10Scene";
+import { JumpingGameScene } from "./scenes/JumpingGame";
+import { Preloader } from "./scenes/Preloader";
 import { Game, Scale } from "phaser";
 
 //  Find out more information about the Game Config at:
@@ -24,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [Part10Scene, MainMenu],
+  scene: [Preloader, JumpingGameScene, MainMenu],
 };
 
 const StartGame = (parent: string) => {

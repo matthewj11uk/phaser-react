@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import { EventBus } from "../EventBus";
 import { BackgroundScrollingPostFxPipeline } from "./background-scrolling-post-fx-pipeline";
 
-export class Part10Scene extends Scene {
+export class JumpingGameScene extends Scene {
   #bgImage!: Phaser.GameObjects.Image | Phaser.GameObjects.TileSprite;
   #pipeline!: BackgroundScrollingPostFxPipeline;
   player: Phaser.Physics.Arcade.Sprite;
@@ -19,21 +19,7 @@ export class Part10Scene extends Scene {
   isJumpDown: boolean = false;
 
   constructor() {
-    super("Part10Scene");
-  }
-
-  preload() {
-    this.load.image("background", "assets/bg.png");
-    this.load.image("galaxy", "assets/galaxy.png");
-    this.load.setPath("assets");
-    this.load.image("sky", "sky.png");
-    this.load.image("ground", "platform.png");
-    this.load.image("star", "star.png");
-    this.load.image("bomb", "bomb.png");
-    this.load.spritesheet("dude", "dude.png", {
-      frameWidth: 32,
-      frameHeight: 48,
-    });
+    super("JumpingGameScene");
   }
 
   create() {
@@ -69,27 +55,6 @@ export class Part10Scene extends Scene {
     //  Player physics properties. Give the little guy a slight bounce.
     this.player.setBounce(0.6);
     this.player.setCollideWorldBounds(true);
-
-    //  Our player animations, turning, walking left and walking right.
-    this.anims.create({
-      key: "left",
-      frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "turn",
-      frames: [{ key: "dude", frame: 4 }],
-      frameRate: 20,
-    });
-
-    this.anims.create({
-      key: "right",
-      frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
-      frameRate: 10,
-      repeat: -1,
-    });
 
     //  Input Events
     if (this.input.keyboard) {
@@ -143,7 +108,20 @@ export class Part10Scene extends Scene {
 
     this.createControls();
 
+    // Dev: Hidden touch area to switch scene
+    this.add
+      .zone(0, 0, 100, 100)
+      .setOrigin(0)
+      .setInteractive()
+      .on("pointerdown", () => {
+        this.scene.switch("MainMenu");
+      });
+
     EventBus.emit("current-scene-ready", this);
+
+    this.events.on("wake", () => {
+      EventBus.emit("current-scene-ready", this);
+    });
   }
 
   createControls() {
@@ -176,7 +154,7 @@ export class Part10Scene extends Scene {
       .setInteractive()
       .setScrollFactor(0);
     this.add
-      .text(310, controlY, "Right15", { fontSize: "24px", color: "#000" })
+      .text(310, controlY, "Right21", { fontSize: "24px", color: "#000" })
       .setOrigin(0.5)
       .setScrollFactor(0);
 

@@ -9,24 +9,18 @@ precision mediump float;
 
 // The main texture
 uniform sampler2D uMainSampler;
-// A time value that continuously increases, used for animation.
-uniform float u_time;
-// A 2D vector to control the scroll speed and direction.
-uniform vec2 u_speed;
+// The pre-calculated scroll offset (0 to 1 range)
+uniform vec2 u_scroll;
 
 // --- VARYING ---
 // This is the texture coordinate passed from the vertex shader.
 varying vec2 outTexCoord;
 
 void main(void) {
-  // It samples the texture at the original, unmodified texture coordinate.
-  // gl_FragColor = texture2D(uMainSampler, outTexCoord);
-
-  // Calculate the new texture coordinates by adding a time-based offset.
-  vec2 scrolledCoords = outTexCoord + (u_time * u_speed);
+  // Calculate the new texture coordinates by adding the pre-calculated offset.
+  vec2 scrolledCoords = outTexCoord + u_scroll;
 
   // Use fract() to wrap the coordinates, creating a seamless tiling effect.
-  // This is equivalent to mod(scrolledCoords, 1.0).
   vec2 wrappedCoords = fract(scrolledCoords);
 
   // Sample the texture at the new, wrapped coordinates.
@@ -47,6 +41,8 @@ export class BackgroundScrollingPostFxPipeline
    */
   #speedX: number = 0;
   #speedY: number = 0.05;
+  #scrollX: number = 0;
+  #scrollY: number = 0;
 
   constructor(game: Phaser.Game) {
     super({
@@ -67,8 +63,16 @@ export class BackgroundScrollingPostFxPipeline
    * Called before the pipeline is rendered. Sets the uniforms required by the shader.
    */
   public onPreRender(): void {
-    // Update the time uniform on each frame. game.loop.time is a continuously increasing value in ms.
-    this.set1f("u_time", this.game.loop.time / 1000); // Convert to seconds for more manageable speed values.
-    this.set2f("u_speed", this.#speedX, this.#speedY);
+    // Calculate the scroll offset by integrating speed over time
+    const delta = this.game.loop.delta / 1000;
+
+    this.#scrollX += this.#speedX * delta;
+    this.#scrollY += this.#speedY * delta;
+
+    // Keep values small (between -1 and 1)
+    this.#scrollX %= 1;
+    this.#scrollY %= 1;
+
+    this.set2f("u_scroll", this.#scrollX, this.#scrollY);
   }
 }
