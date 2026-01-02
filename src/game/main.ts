@@ -25,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [Preloader, JumpingGameScene, MainMenu],
+  scene: [Preloader, MainMenu, JumpingGameScene],
 };
 
 const StartGame = (parent: string) => {

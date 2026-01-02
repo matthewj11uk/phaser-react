@@ -23,7 +23,9 @@ export class Preloader extends Scene {
     //  Load the assets for the game
     this.load.setPath("assets");
 
+    this.load.image("flame", "flame.png");
     this.load.image("logo", "logo.png");
+    this.load.image("rocket", "rocket.png");
     this.load.image("background", "bg.png");
     this.load.image("galaxy", "galaxy.png");
     this.load.image("sky", "sky.png");
@@ -59,6 +61,6 @@ export class Preloader extends Scene {
     });
 
     //  Move to the JumpingGameScene
-    this.scene.start("JumpingGameScene");
+    this.scene.start("MainMenu");
   }
 }
