@@ -8,16 +8,15 @@ export class MainMenu extends Scene {
   #pipeline!: BackgroundScrollingPostFxPipeline;
 
   // Speed control variables
-  #scrollSpeedX: number = 0;
-  #scrollSpeedY: number = 0;
-  readonly #maxSpeed: number = 0.5;
+  readonly #maxSpeed: number = 300; // Physics velocity units
 
   // Touch control variables
   #touchStartX: number = 0;
   #touchStartY: number = 0;
 
   background: GameObjects.Image;
-  rocket: GameObjects.Sprite;
+  rocket: Phaser.Physics.Arcade.Sprite;
+  private levelTile!: Phaser.GameObjects.TileSprite;
   private emitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
   constructor() {
@@ -27,20 +26,36 @@ export class MainMenu extends Scene {
   create() {
     this.#setupPipelines();
 
+    // Background setup
     this.background = this.add.image(
       this.scale.width / 2,
       this.scale.height / 2,
       "galaxy",
     );
     this.background.setDisplaySize(this.scale.width, this.scale.height);
+    this.background.setScrollFactor(0); // Fix background to camera
     this.background.setPostPipeline(BackgroundScrollingPostFxPipeline.name);
     this.#pipeline = this.background.getPostPipeline(
       BackgroundScrollingPostFxPipeline,
     ) as BackgroundScrollingPostFxPipeline;
 
-    this.rocket = this.add
+    // Level setup (TileSprite for infinite scrolling)
+    this.levelTile = this.add.tileSprite(
+      this.scale.width / 2,
+      this.scale.height / 2,
+      this.scale.width,
+      this.scale.height,
+      "level"
+    )
+    .setScrollFactor(0)
+    .setDepth(0);
+
+    // Rocket setup
+    this.rocket = this.physics.add
       .sprite(this.scale.width / 2, this.scale.height / 2, "rocket", 4)
       .setDepth(100);
+    
+    (this.rocket.body as Phaser.Physics.Arcade.Body).allowGravity = false;
 
     this.emitter = this.add.particles(0, 0, "flame", {
       speed: 100,
@@ -57,6 +72,7 @@ export class MainMenu extends Scene {
       .zone(0, 0, 100, 100)
       .setOrigin(0)
       .setInteractive()
+      .setScrollFactor(0) // Fix UI to camera
       .on("pointerdown", () => {
         this.scene.switch("JumpingGameScene");
       });
@@ -73,33 +89,37 @@ export class MainMenu extends Scene {
     });
   }
 
-  update(): void {
+  update(_time: number, delta: number): void {
+    let velocityX = 0;
+    let velocityY = 0;
+
     if (this.input.activePointer.isDown) {
       this.emitter.start();
       const pointer = this.input.activePointer;
       const dirX = pointer.x - this.#touchStartX;
       const dirY = pointer.y - this.#touchStartY;
       const dist = Math.sqrt(dirX * dirX + dirY * dirY);
+      
       if (dist > 0) {
-        // Set speed to maxSpeed in the direction of movement
+        // Normalize direction
         const normX = dirX / dist;
         const normY = dirY / dist;
-        this.#scrollSpeedX = normX * this.#maxSpeed;
-        this.#scrollSpeedY = -normY * this.#maxSpeed;
+        
+        // Calculate velocity
+        velocityX = normX * this.#maxSpeed;
+        velocityY = normY * this.#maxSpeed;
 
         this.rocket.rotation =
           Phaser.Math.Angle.Between(
             0,
             0,
-            this.#scrollSpeedX,
-            -this.#scrollSpeedY,
+            velocityX,
+            velocityY,
           ) +
           Math.PI / 2;
-      } else {
-        this.#scrollSpeedX = 0;
-        this.#scrollSpeedY = 0;
+      } 
+    } else {
         this.emitter.stop();
-      }
     }
 
     const offset = this.rocket.displayHeight / 2;
@@ -109,10 +129,17 @@ export class MainMenu extends Scene {
     this.emitter.setPosition(x, y);
     this.emitter.setAngle(this.rocket.angle + 90);
 
-    // Update pipeline
+    // Scroll the level tile to create movement illusion
+    // If rocket moves RIGHT, background scrolls LEFT (increase tilePositionX)
+    this.levelTile.tilePositionX += velocityX * (delta / 1000);
+    this.levelTile.tilePositionY += velocityY * (delta / 1000);
+
+    // Update pipeline to scroll stars based on velocity
     if (this.#pipeline) {
-      this.#pipeline.speedX = this.#scrollSpeedX;
-      this.#pipeline.speedY = this.#scrollSpeedY;
+      // Map velocity (0-300) to shader speed (0-0.5 approx)
+      const SHADER_SPEED_FACTOR = 0.0002;
+      this.#pipeline.speedX = velocityX * SHADER_SPEED_FACTOR;
+      this.#pipeline.speedY = -velocityY * SHADER_SPEED_FACTOR;
     }
   }
 
